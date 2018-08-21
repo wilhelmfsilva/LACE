@@ -1,0 +1,128 @@
+#include <Adafruit_TFTLCD.h> 
+#include <Adafruit_GFX.h>    
+#include <TouchScreen.h>
+
+#define LCD_CS A3 
+#define LCD_CD A2 
+#define LCD_WR A1 
+#define LCD_RD A0 
+#define LCD_RESET A4 
+
+#define TS_MINX 103
+#define TS_MINY 124
+#define TS_MAXX 1015
+#define TS_MAXY 985
+
+#define YP A3 
+#define XM A2
+#define YM 9
+#define XP 8
+
+#define BLACK   0x0000
+#define BLUE    0x001F
+#define RED     0xF800
+#define GREEN   0x07E0
+#define CYAN    0x07FF
+#define MAGENTA 0xF81F
+#define YELLOW  0xFFE0
+#define WHITE   0xFFFF
+
+Adafruit_TFTLCD tft(LCD_CS, LCD_CD, LCD_WR, LCD_RD, LCD_RESET);
+
+TouchScreen ts = TouchScreen(XP, YP, XM, YM, 300);
+
+boolean buttonEnabled = true;
+
+void setup() {
+  
+  tft.reset();
+  tft.begin(0x9341);
+  tft.setRotation(1);
+  tft.fillScreen(WHITE);
+  tft.drawRect(0,0,319,240,BLACK);
+  
+  tft.setCursor(60,1);
+  tft.setTextColor(RED);
+  tft.setTextSize(1);
+  tft.print("Universidade federal de uberlandia");
+  
+  tft.setCursor(7,10);
+  tft.setTextColor(RED);
+  tft.setTextSize(1);
+  tft.print("Laboratorio de acionamentos eletricos e eletronicos");
+  
+  tft.setCursor(15,60);
+  tft.setTextColor(BLACK);
+  tft.setTextSize(2);
+  tft.print("Guilherme Ferreira Silva");
+
+  tft.setCursor(25,110);
+  tft.setTextColor(BLUE);
+  tft.setTextSize(2);
+  tft.print("Acionamento e controle \n         para MRVs");
+  
+  tft.fillRect(55,180, 210, 40, RED);
+  tft.drawRect(55,180,210,40,BLACK);
+  tft.setCursor(105,190);
+  tft.setTextColor(WHITE);
+  tft.setTextSize(2);
+  tft.print("INICIAR?");
+
+  #define MINPRESSURE 10
+  #define MAXPRESSURE 1000
+
+  pinMode(13, OUTPUT);
+}
+
+void loop() {
+  digitalWrite(13, HIGH);
+  TSPoint p = ts.getPoint();
+  digitalWrite(13, LOW);
+  
+  if (p.z > ts.pressureThreshhold) {
+    
+    p.x = map(p.x, TS_MINX, TS_MAXX, tft.width(), 0);
+    p.y = map(p.y, TS_MINY, TS_MAXY, tft.height(), 0);
+
+  if (p.z > MINPRESSURE && p.z < MAXPRESSURE) {
+       
+   if(p.x>60 && p.x<100 && p.y>65 && p.y<215 && buttonEnabled){  
+    
+    buttonEnabled = false;
+    
+    pinMode(XM, OUTPUT);
+    pinMode(YP, OUTPUT);
+
+    tft.fillScreen(BLACK);
+    tft.fillRect(0, 160, 160, 80, RED);
+    tft.drawRect(0, 160, 160, 80, BLACK);
+    tft.fillRect(160, 160, 160, 80, GREEN);
+    tft.drawRect(160, 160, 160, 80, BLACK);
+    tft.setCursor(200, 190);
+    tft.setTextColor(WHITE);
+    tft.setTextSize(2);
+    tft.print("ACIONAR");
+    tft.setCursor(45, 190);
+    tft.setTextColor(WHITE);
+    tft.setTextSize(2);
+    tft.print("PARAR");
+
+    tft.setCursor(244,0);
+    tft.setTextColor(WHITE);
+    tft.setTextSize(2);
+    tft.print("\n 8\n 7\n 6\n 5\n 4\n 3\n 2\n 1\n 0");
+    
+    tft.setCursor(0,5);
+    tft.setTextColor(WHITE);
+    tft.setTextSize(1);
+    tft.print("I(A)");
+
+    tft.fillRect(24, 0, 320, 161, BLACK);
+    tft.drawRect(24, 0, 320, 161, WHITE);
+    tft.fillRect(25, 0, 320, 5, BLACK);
+    tft.drawRect(25, 0, 320, 5, BLACK);
+
+   }
+   }
+  }
+}
